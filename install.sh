@@ -12,7 +12,7 @@ echo "--- VPN Panel Admin Setup ---"
 read -p "Admin Username ပေးပါ: " adm_user
 read -p "Admin Password ပေးပါ: " adm_pass
 
-# ၄။ ရိုက်ထည့်လိုက်တာကို /var/www/html/config.php ထဲမှာ သိမ်းမယ်
+# ၄။ ရိုက်ထည့်လိုက်တာကို config.php ထဲ သိမ်းမယ်
 echo "<?php \$admin_user='$adm_user'; \$admin_pass='$adm_pass'; ?>" > /var/www/html/config.php
 
 echo "------------------------------------------"
