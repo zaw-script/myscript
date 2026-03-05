@@ -7,18 +7,24 @@ apt install apache2 php libapache2-mod-php wget -y
 # ၂။ IP Address ကို ရှာမယ်
 MYIP=$(wget -qO- ipv4.icanhazip.com)
 
-# ၃။ User နဲ့ Pass ကို တစ်ဆင့်ချင်း မေးမယ်
+# ၃။ User နဲ့ Pass ကို မရမက မေးမယ့်အပိုင်း
 echo "--- VPN Panel Admin Setup ---"
-echo -n "Admin Username ပေးပါ: "
-read adm_user
-echo -n "Admin Password ပေးပါ: "
-read adm_pass
 
-# ၄။ Admin အချက်အလက် သိမ်းမယ် (Permission ပါ ချမယ်)
+# Username မေးမယ် (မရိုက်မချင်း ရှေ့မသွားအောင် လုပ်ထားတယ်)
+while [ -z "$adm_user" ]; do
+    read -p "Admin Username ပေးပါ: " adm_user
+done
+
+# Password မေးမယ်
+while [ -z "$adm_pass" ]; do
+    read -p "Admin Password ပေးပါ: " adm_pass
+done
+
+# ၄။ Admin အချက်အလက် သိမ်းမယ်
 echo "<?php \$admin_user='$adm_user'; \$admin_pass='$adm_pass'; ?>" > /var/www/html/config.php
 chmod 644 /var/www/html/config.php
 
-# ၅။ Login Page (index.php) ကို ပြန်ဆောက်မယ်
+# ၅။ Login Page (index.php) ကို သေချာပြန်ဆောက်မယ်
 cat <<EOF > /var/www/html/index.php
 <?php
 include "config.php";
@@ -27,6 +33,7 @@ if (isset(\$_POST['user'])) {
         echo "<h1 style='color:green; text-align:center;'>Welcome Admin! Login အောင်မြင်ပါတယ်။</h1>";
     } else {
         echo "<h1 style='color:red; text-align:center;'>Username သို့မဟုတ် Password မှားနေပါတယ်။</h1>";
+        echo "<div style='text-align:center;'><a href='index.php'>နောက်သို့ ပြန်သွားရန်</a></div>";
     }
 } else {
 ?>
@@ -45,6 +52,8 @@ EOF
 service apache2 restart
 
 echo "------------------------------------------"
-echo "အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ!"
-echo "Link ကို ပြန်ဖွင့်ကြည့်ပါ: http://$MYIP"
+echo "အောင်မြင်စွာ တည်ဆောက်ပြီးပါပြီ!"
+echo "User: $adm_user"
+echo "Pass: $adm_pass"
+echo "Admin Web Panel: http://$MYIP"
 echo "------------------------------------------"
