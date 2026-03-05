@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# ၁။ လိုအပ်တာတွေ သွင်းမယ်
+# ၁။ လိုအပ်တာတွေ အရင်သွင်းမယ်
 apt update -y
 apt install apache2 php libapache2-mod-php wget screen -y
 
-# UDP Gateway သွင်းမယ်
+# Badvpn-udpgw (UDP Gateway) သွင်းမယ်
 wget -O /usr/bin/badvpn-udpgw "https://github.com/ambrop71/badvpn/raw/master/bin/badvpn-udpgw"
 chmod +x /usr/bin/badvpn-udpgw
 screen -dmS udp screen badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000
@@ -13,27 +13,25 @@ screen -dmS udp screen badvpn-udpgw --listen-addr 127.0.0.1:7300 --max-clients 1
 MYIP=$(wget -qO- ipv4.icanhazip.com)
 
 # ၃။ Admin User/Pass မေးမယ်
-echo "--- ZiVPN UDP Panel (Secure Login) ---"
+echo "--- ZiVPN Professional UDP Panel ---"
 read -p "Admin Username ပေးပါ: " adm_user
 read -p "Admin Password ပေးပါ: " adm_pass
 
 # ၄။ Admin အချက်အလက် သိမ်းမယ်
 echo "<?php \$admin_user='$adm_user'; \$admin_pass='$adm_pass'; ?>" > /var/www/html/config.php
 
-# ၅။ Panel မျက်နှာပြင် (index.php) ကို စနစ်တကျ ပြန်ဆောက်မယ်
+# ၅။ Professional UI (index.php) ဆောက်မယ်
 cat <<EOF > /var/www/html/index.php
 <?php
 include "config.php";
 session_start();
 
-// Logout လုပ်ရန်
 if (isset(\$_GET['action']) && \$_GET['action'] == 'logout') {
     session_destroy();
     header("Location: index.php");
     exit();
 }
 
-// Login စစ်ဆေးခြင်း
 if (!isset(\$_SESSION['logged_in'])) {
     if (isset(\$_POST['login_btn'])) {
         if (\$_POST['user'] == \$admin_user && \$_POST['pass'] == \$admin_pass) {
@@ -41,75 +39,98 @@ if (!isset(\$_SESSION['logged_in'])) {
             header("Location: index.php");
             exit();
         } else {
-            \$error = "Username သို့မဟုတ် Password မှားနေပါသည်။";
+            \$error = "Invalid Login Details!";
         }
     }
 ?>
-    <div style="max-width:350px; margin:100px auto; font-family:sans-serif; border:1px solid #ddd; padding:30px; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
-        <h2 style="text-align:center;">Admin Login</h2>
-        <?php if(isset(\$error)) echo "<p style='color:red; text-align:center;'>\$error</p>"; ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZiVPN Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { background: #f0f2f5; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        .login-box h2 { color: #1a73e8; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1557b0; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>ZiVPN Admin</h2>
+        <?php if(isset(\$error)) echo "<p style='color:red;'>\$error</p>"; ?>
         <form method="POST">
-            <input type="text" name="user" placeholder="Admin Username" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing: border-box;"><br>
-            <input type="password" name="pass" placeholder="Admin Password" required style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing: border-box;"><br>
-            <button type="submit" name="login_btn" style="width:100%; padding:12px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Login</button>
+            <input type="text" name="user" placeholder="Username" required>
+            <input type="password" name="pass" placeholder="Password" required>
+            <button type="submit" name="login_btn">LOGIN</button>
         </form>
     </div>
-<?php
-    exit();
-}
+</body>
+</html>
+<?php exit(); } ?>
 
-// အကောင့်ဆောက်ခြင်းအပိုင်း (Login ဝင်ပြီးမှ မြင်ရမည်)
-if (isset(\$_POST['create_user'])) {
-    \$u = \$_POST['username'];
-    \$p = \$_POST['password'];
-    \$d = \$_POST['days'];
-    \$exp = date('Y-m-d', strtotime("+\$d days"));
-    
-    shell_exec("sudo useradd -e \$exp -M -s /bin/false \$u && echo '\$u:\$p' | sudo chpasswd");
-    
-    \$udp_config = "SSH-UDP###\$u:\$p@$MYIP:22";
-    \$msg = "အောင်မြင်သည်! User: \$u (Exp: \$exp)";
-}
-?>
-
-<div style="max-width:500px; margin:50px auto; font-family:sans-serif; border:1px solid #ddd; padding:20px; border-radius:10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="color:#333;">ZiVPN Manager</h2>
-        <a href="?action=logout" style="color:red; text-decoration:none; font-weight:bold;">Logout</a>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZiVPN Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { background: #f8f9fa; font-family: sans-serif; margin: 0; }
+        .nav { background: #1a73e8; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 600px; margin: 20px auto; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0 15px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn-create { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .config-box { background: #e9ecef; padding: 15px; border-radius: 5px; margin-top: 20px; word-break: break-all; border-left: 5px solid #28a745; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <span><b>ZiVPN UDP PANEL</b></span>
+        <a href="?action=logout" style="color: white; text-decoration: none; font-size: 14px;">Logout</a>
     </div>
-    <hr>
-    <?php if(isset(\$msg)) echo "<p style='color:green; font-weight:bold; text-align:center;'>\$msg</p>"; ?>
-    
-    <form method="POST">
-        <label>VPN Username:</label>
-        <input type="text" name="username" placeholder="Username" required style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px; box-sizing: border-box;">
-        <label>VPN Password:</label>
-        <input type="text" name="password" placeholder="Password" required style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px; box-sizing: border-box;">
-        <label>သက်တမ်း (ရက်):</label>
-        <select name="days" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px;">
-            <option value="1">၁ ရက် (Trial)</option>
-            <option value="7">၇ ရက် (1 Week)</option>
-            <option value="30" selected>၃၀ ရက် (1 Month)</option>
-            <option value="90">၉၀ ရက် (3 Months)</option>
-        </select>
-        <button type="submit" name="create_user" style="width:100%; padding:12px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:10px;">Create Account</button>
-    </form>
+    <div class="container">
+        <div class="card">
+            <h3 style="margin-top: 0; color: #333;">Create UDP Account</h3>
+            
+            <?php
+            if (isset(\$_POST['create'])) {
+                \$u = \$_POST['user']; \$p = \$_POST['pass']; \$d = \$_POST['days'];
+                \$exp = date('Y-m-d', strtotime("+\$d days"));
+                shell_exec("sudo useradd -e \$exp -M -s /bin/false \$u && echo '\$u:\$p' | sudo chpasswd");
+                
+                // ZiVPN UDP SSH Format
+                \$config = "SSH-UDP###\$u:\$p@$MYIP:22";
+                echo "<p style='color: green;'>Account Created Successfully!</p>";
+                echo "<div class='config-box'><b>Config:</b><br>\$config<br><br><b>Expires:</b> \$exp</div>";
+            }
+            ?>
 
-    <?php if(isset(\$udp_config)): ?>
-        <hr>
-        <h4 style="margin-bottom:5px;">ZiVPN UDP Config:</h4>
-        <div style="background:#f4f4f4; padding:15px; word-break:break-all; border:1px dashed #666; font-family:monospace; border-radius:5px;">
-            <?php echo \$udp_config; ?>
+            <form method="POST">
+                <label>Username</label>
+                <input type="text" name="user" placeholder="Enter VPN Username" required>
+                <label>Password</label>
+                <input type="text" name="pass" placeholder="Enter VPN Password" required>
+                <label>Validity (Days)</label>
+                <select name="days">
+                    <option value="1">1 Day (Trial)</option>
+                    <option value="7">7 Days</option>
+                    <option value="30" selected>30 Days</option>
+                </select>
+                <button type="submit" name="create" class="btn-create">CREATE ACCOUNT</button>
+            </form>
         </div>
-        <p style="font-size:12px; color:blue; margin-top:5px; text-align:center;">* Copy ကူးပြီး ZiVPN ထဲတွင် သုံးပါ *</p>
-    <?php endif; ?>
-</div>
+    </div>
+</body>
+</html>
 EOF
 
 chown -R www-data:www-data /var/www/html/
 service apache2 restart
 
 echo "------------------------------------------"
-echo "ZiVPN Panel (Login Fixed) Update ပြီးပါပြီ!"
+echo "ZiVPN Professional Panel Update Complete!"
 echo "Link: http://$MYIP"
 echo "------------------------------------------"
