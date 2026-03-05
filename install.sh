@@ -14,23 +14,23 @@ read adm_user
 echo -n "Admin Password ပေးပါ: "
 read adm_pass
 
-# ၄။ Admin အချက်အလက် သိမ်းမယ်
+# ၄။ Admin အချက်အလက် သိမ်းမယ် (Permission ပါ ချမယ်)
 echo "<?php \$admin_user='$adm_user'; \$admin_pass='$adm_pass'; ?>" > /var/www/html/config.php
+chmod 644 /var/www/html/config.php
 
-# ၅။ Login Page (index.php) ကို တစ်ခါတည်း ဆောက်မယ်
+# ၅။ Login Page (index.php) ကို ပြန်ဆောက်မယ်
 cat <<EOF > /var/www/html/index.php
 <?php
 include "config.php";
 if (isset(\$_POST['user'])) {
     if (\$_POST['user'] == \$admin_user && \$_POST['pass'] == \$admin_pass) {
         echo "<h1 style='color:green; text-align:center;'>Welcome Admin! Login အောင်မြင်ပါတယ်။</h1>";
-        echo "<p style='text-align:center;'>ဒါက ညီလေးရဲ့ ကိုယ်ပိုင် VPN Panel အခြေခံ မျက်နှာပြင်ပါဗျ။</p>";
     } else {
-        echo "<h1 style='color:red; text-align:center;'>User သို့မဟုတ် Password မှားနေပါတယ်။</h1>";
+        echo "<h1 style='color:red; text-align:center;'>Username သို့မဟုတ် Password မှားနေပါတယ်။</h1>";
     }
-}
+} else {
 ?>
-<div style="text-align:center; margin-top:50px;">
+<div style="text-align:center; margin-top:50px; font-family: sans-serif;">
     <form method="POST">
         <h2>VPN Admin Login</h2>
         Username: <input type="text" name="user" required><br><br>
@@ -38,12 +38,13 @@ if (isset(\$_POST['user'])) {
         <button type="submit">Login</button>
     </form>
 </div>
+<?php } ?>
 EOF
 
 # ၆။ Apache ကို ပြန်ပွင့်ခိုင်းမယ်
 service apache2 restart
 
 echo "------------------------------------------"
-echo "အောင်မြင်စွာ တည်ဆောက်ပြီးပါပြီ!"
-echo "Admin Web Panel Link: http://$MYIP"
+echo "အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ!"
+echo "Link ကို ပြန်ဖွင့်ကြည့်ပါ: http://$MYIP"
 echo "------------------------------------------"
