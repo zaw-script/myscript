@@ -1,344 +1,476 @@
 
 
+
 #!/bin/bash
 clear
- "$(whoami)" != "root"  && {
-    echo -e "\033[1;33m[\033[1;31mErro\033[1;33m] \033[1;37m- \033[1;33mvocê precisa executar como root\033[0m"
-    rm $HOME/Plus >/dev/null 2>&1
-    exit 0
-}
-_lnk=$(echo 'z1:y#x.5s0ul&p4hs$s.0a72d*n-e!v89e032:3r' | sed -e 's/[^a-z.]//ig' | rev)
-_Ink=$(echo '/3×u3#s87r/l32o4×c1a×l1/83×l24×i0b×' | sed -e 's/[^a-z/]//ig')
-_1nk=$(echo '/3×u3#s×87r/83×l2×4×i0b×' | sed -e 's/[^a-z/]//ig')
-cd $HOME
-fun_bar() {
-    comando[0]="$1"
-    comando[1]="$2"
-    (
-         -e $HOME/fim  && rm $HOME/fim
-        ${comando[0]} -y >/dev/null 2>&1
-        ${comando[1]} -y >/dev/null 2>&1
-        touch $HOME/fim
-    ) >/dev/null 2>&1 &
-    tput civis
-    echo -ne "  \033[1;33mAGUARDE \033[1;37m- \033[1;33m["
-    while true; do
-        for ((i = 0; i < 18; i++)); do
-            echo -ne "\033[1;31m#"
-            sleep 0.1s
-        done
-         -e $HOME/fim  && rm $HOME/fim && break
-        echo -e "\033[1;33m]"
-        sleep 1s
-        tput cuu1
-        tput dl1
-        echo -ne "  \033[1;33mAGUARDE \033[1;37m- \033[1;33m["
-    done
-    echo -e "\033[1;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
-    tput cnorm
-}
-function verif_key() {
-    krm=$(echo '5:q-3gs2.o7%8:1' | rev)
-    chmod +x $_Ink/list >/dev/null 2>&1
-     ! -e "$_Ink/list"  && {
-        echo -e "\n\033[1;31mKEY INVÁLIDA!\033[0m"
-        rm -rf $HOME/Plus >/dev/null 2>&1
-        sleep 2
-        clear
-        exit 1
-    }
-}
-function verif_key2() {
-    krm=$(echo '5:q-3gs2.o7%8:1' | rev)
-    chmod +x $_Ink/listARM >/dev/null 2>&1
-     ! -e "$_Ink/listARM"  && {
-        echo -e "\n\033[1;31mKEY INVÁLIDA!\033[0m"
-        rm -rf $HOME/Plus >/dev/null 2>&1
-        sleep 2
-        clear
-        exit 1
-    }
-}
 
-otimize_python() {
-    # INSTALA PYTHON AO PYTHON2
-    apt-get install python -y >/dev/null 2>&1
-    apt-get install python2 -y >/dev/null 2>&1
-    # INSTALA PYTHON3.6 AO PYTHON3.9
-    apt-get install python3.6 -y >/dev/null 2>&1
-    apt-get install python3.7 -y >/dev/null 2>&1
-    apt-get install python3.8 -y >/dev/null 2>&1
-    apt-get install python3.9 -y >/dev/null 2>&1
-    # CRIA ALTERNATIVAS PYTHON
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1 >/dev/null 2>&1
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 3 >/dev/null 2>&1
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 2 >/dev/null 2>&1
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 4 >/dev/null 2>&1
-    # INSTALA PIP
-    apt install pip -y
-    apt install python3-pip -y
-    # INSTALA SOCAT
-    apt install socat -y
-    #SETAR PYTHON3
-    update-alternatives --set python3 /usr/bin/python3.6
-}
-echo -e "\033[1;31m════════════════════════════════════════════════════\033[0m"
-tput setaf 7
-tput setab 4
-tput bold
-printf '%40s%s%-12s\n' "BEM VINDO AO SSHPLUS MANAGER"
-tput sgr0
-echo -e "\033[1;31m════════════════════════════════════════════════════\033[0m"
-echo ""
-echo -e "             \033[1;31mATENCAO! \033[1;33mESSE SCRIPT IRA !\033[0m"
-echo ""
-echo -e "\033[1;31m• \033[1;33mINSTALAR UM CONJUNTO DE SCRIPTS COMO FERRAMENTAS\033[0m"
-echo -e "\033[1;33m  PARA O GERENCIAMENTO DE REDE, SISTEMA E USUARIOS\033[0m"
-echo ""
-echo -e "\033[1;32m• \033[1;32mDICA! \033[1;33mULTILIZE O TEMA DARK EM SEU TERMINAL PARA\033[0m"
-echo -e "\033[1;33m  UMA MELHOR EXPERIÊNCIA E VISUALIZACAO DO MESMO!\033[0m"
-echo ""
-echo -e "\033[1;31m≠×≠×≠×≠×≠×≠×≠×[\033[1;33m • \033[1;32mEDIT:@kiritosshxd\033[1;33m •\033[1;31m ]≠×≠×≠×≠×≠×≠×≠×\033[0m"
-echo ""
-#-----------------------------------------------------------------------------------------------------------------
-echo -ne "\033[1;36mGENERAR AS KEY FREE [N/S]: \033[1;37m"
-read x
- $x = @(n|N)  && exit
-echo -e "\033[1;36mSelecione a Arquitetura da sua VPS: \033[1;37m"
-echo -e "[1] - x86_64"
-echo -e "[2] - aarch64(ARM)"
-echo -ne "\033[1;36mOpção: \033[1;37m"
-read resposta
-if  "$resposta" = '1' ; then
-    sed -i 's/Port 22222/Port 22/g' /etc/ssh/sshd_config >/dev/null 2>&1
-    service ssh restart >/dev/null 2>&1
-    mkdir /etc/rec >/dev/null 2>&1
-    echo -e "\n\033[1;36mVERIFICANDO... \033[1;37m 16983:16085\033[0m"
-    rm $_Ink/list >/dev/null 2>&1
-    wget -P $_Ink https://raw.githubusercontent.com/sansoe2022/VPN_SCRIPT/refs/heads/main/Install/list >/dev/null 2>&1
-    verif_key
-    sleep 3s
-    echo "/bin/menu" >/bin/h && chmod +x /bin/h >/dev/null 2>&1
-    rm versao* >/dev/null 2>&1
-    wget https://raw.githubusercontent.com/sansoe2022/VPN_SCRIPT/refs/heads/main/Install/versao >/dev/null 2>&1
-    >/dev/null 2>&1
-    wget https://iplogger.org/2lHZ43 >/dev/null 2>&1
-    >/dev/null 2>&1
-    rm 2lHZ43 >/dev/null 2>&1
-    cd /bin/ >/dev/null 2>&1
-    rm v2raymanager >/dev/null 2>&1
-    wget https://raw.githubusercontent.com/sansoe2022/VPN_SCRIPT/refs/heads/main/Modulos/v2raymanager >/dev/null 2>&1
-    wget https://www.dropbox.com/s/m9tnme1jjbnehnj/botteste.sh >/dev/null 2>&1
-    chmod 777 v2raymanager >/dev/null 2>&1
-    chmod 777 botteste.sh >/dev/null 2>&1
-    mkdir $HOME/BOT >/dev/null 2>&1
-    cd $HOME/BOT
-    wget https://raw.githubusercontent.com/sansoe2022/VPN_SCRIPT/refs/heads/main/Sistema/ShellBot.sh >/dev/null 2>&1
-    chmod 777 ShellBot.sh >/dev/null 2>&1
-    cd >/dev/null 2>&1
-    #-----------------------------------------------------------------------------------------------------------------
-    echo -e "\n\033[1;32mKEY VALIDA!\033[1;32m"
-    sleep 1s
-    echo ""
-     -f "$HOME/usuarios.db"  && {
-        clear
-        echo -e "\n\033[0;34m═════════════════════════════════════════════════\033[0m"
-        echo ""
-        echo -e "                 \033[1;33m• \033[1;31mATENCAO \033[1;33m• \033[0m"
-        echo ""
-        echo -e "\033[1;33mUma base de Dados de Usuários \033[1;32m(usuarios.db) \033[1;33mFoi"
-        echo -e "Encontrada! Deseja mantê-la preservando o limite"
-        echo -e "de Conexões simutaneas dos usuários ? Ou Deseja"
-        echo -e "criar uma nova base de dados ?\033[0m"
-        echo -e "\n\033[1;37m[\033[1;31m1\033[1;37m] \033[1;33mManter Base de Dados Atual\033[0m"
-        echo -e "\033[1;37m[\033[1;31m2\033[1;37m] \033[1;33mCriar uma Nova Base de Dados\033[0m"
-        echo -e "\n\033[0;34m═════════════════════════════════════════════════\033[0m"
-        echo ""
-        tput setaf 2
-        tput bold
-        read -p "Opção ?: " -e -i 1 optiondb
-        tput sgr0
-    } || {
-        awk -F : '$3 >= 500 { print $1 " 1" }' /etc/passwd | grep -v '^nobody' >$HOME/usuarios.db
-    }
-     "$optiondb" = '2'  && awk -F : '$3 >= 500 { print $1 " 1" }' /etc/passwd | grep -v '^nobody' >$HOME/usuarios.db
-    clear
-    tput setaf 7
-    tput setab 4
-    tput bold
-    printf '%35s%s%-18s\n' " AGUARDE A INSTALAÇÃO"
-    tput sgr0
-    echo ""
-    echo ""
-    echo -e "          \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mATUALIZANDO SISTEMA \033[1;33m[\033[1;31m!\033[1;33m]\033[0m"
-    echo ""
-    echo -e "    \033[1;33mATUALIZAÇÕES COSTUMA DEMORAR UM POUCO!\033[0m"
-    echo ""
-    fun_attlist() {
-        apt-get update -y
-         ! -d /usr/share/.plus  && mkdir /usr/share/.plus
-        echo "crz: $(date)" >/usr/share/.plus/.plus
-    }
-    fun_bar 'fun_attlist'
-    clear
-    echo ""
-    echo -e "          \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO PACOTES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
-    echo ""
-    echo -e "\033[1;33mALGUNS PACOTES SAO EXTREMAMENTE  NECESSÁRIOS !\033[0m"
-    echo ""
-    inst_pct() {
-        _pacotes=("bc" "screen" "nano" "unzip" "lsof" "netstat" "net-tools" "dos2unix" "nload" "jq" "curl" "figlet" "python3" "python-pip" "python" "at")
-        for _prog in ${_pacotes[@]}; do
-            apt install $_prog -y
-        done
-        pip install speedtest-cli
-    }
-    fun_bar 'inst_pct'
-     -f "/usr/sbin/ufw"  && ufw allow 443/tcp
-    ufw allow 80/tcp
-    ufw allow 3128/tcp
-    ufw allow 8799/tcp
-    ufw allow 8080/tcp
-    ufw allow 2052/tcp
-    clear
-    echo ""
-    echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
-    echo ""
-    echo -e "      \033[1;33mOTIMIZANDO PYTHON \033[0m"
-    echo ""
-    fun_bar 'otimize_python'
-    clear
-    echo ""
-    echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
-    echo ""
-    echo -e "      \033[1;33mCONCLUINDO FUNÇÕES E DEFINIÇÕES! \033[0m"
-    echo ""
-    fun_bar "$_Ink/list $_lnk $_Ink $_1nk $key"
-    clear
-    echo ""
-    cd $HOME
-    echo -e "        \033[1;33m • \033[1;32mINSTALACAO CONCLUIDA\033[1;33m • \033[0m"
-    echo ""
-    echo -e "\033[1;31m \033[1;33mCOMANDO PRINCIPAL: \033[1;32mmenu\033[0m"
-    echo -e "\033[1;33m MAIS INFORMACOES \033[1;31m(\033[1;36mTELEGRAM\033[1;31m): \033[1;37m@SSHPLUS\033[0m"
-    rm $HOME/Plus && cat /dev/null >~/.bash_history && history -c
-elif  "$resposta" = '2' ; then
-    sed -i 's/Port 2052/Port 22/g' /etc/ssh/sshd_config >/dev/null 2>&1
-    service ssh restart >/dev/null 2>&1
-    echo -e "\n\033[1;36mVERIFICANDO... \033[1;37m 16983:16085\033[0m"
-    rm $_Ink/listARM >/dev/null 2>&1
-    wget -P $_Ink https://www.dropbox.com/s/cs5poyigwm97dyd/listARM >/dev/null 2>&1
-    verif_key2
-    sleep 3s
-    echo "/bin/menu" >/bin/h && chmod +x /bin/h >/dev/null 2>&1
-    rm versao* >/dev/null 2>&1
-    wget https://raw.githubusercontent.com/sansoe2022/VPN_SCRIPT/refs/heads/main/Install/versao >/dev/null 2>&1
-    >/dev/null 2>&1
-    wget https://iplogger.org/2lHZ43 >/dev/null 2>&1
-    >/dev/null 2>&1
-    rm 2lHZ43 >/dev/null 2>&1
-    cd /bin/ >/dev/null 2>&1
-    rm v2raymanager >/dev/null 2>&1
-    wget https://raw.githubusercontent.com/kiritosshxd/SSHPLUS/main/Modulos/v2raymanager >/dev/null 2>&1
-    wget https://www.dropbox.com/s/m9tnme1jjbnehnj/botteste.sh >/dev/null 2>&1
-    chmod 777 v2raymanager >/dev/null 2>&1
-    chmod 777 botteste.sh >/dev/null 2>&1
-    mkdir $HOME/BOT >/dev/null 2>&1
-    cd $HOME/BOT
-    wget https://www.dropbox.com/s/7dkgxy00x33c4y7/ShellBot.sh >/dev/null 2>&1
-    chmod 777 ShellBot.sh >/dev/null 2>&1
-    cd >/dev/null 2>&1
-    #-----------------------------------------------------------------------------------------------------------------
-    echo -e "\n\033[1;32mKEY VALIDA!\033[1;32m"
-    sleep 1s
-    echo ""
-     -f "$HOME/usuarios.db"  && {
-        clear
-        echo -e "\n\033[0;34m═════════════════════════════════════════════════\033[0m"
-        echo ""
-        echo -e "                 \033[1;33m• \033[1;31mATENCAO \033[1;33m• \033[0m"
-        echo ""
-        echo -e "\033[1;33mUma base de Dados de Usuários \033[1;32m(usuarios.db) \033[1;33mFoi"
-        echo -e "Encontrada! Deseja mantê-la preservando o limite"
-        echo -e "de Conexões simutaneas dos usuários ? Ou Deseja"
-        echo -e "criar uma nova base de dados ?\033[0m"
-        echo -e "\n\033[1;37m[\033[1;31m1\033[1;37m] \033[1;33mManter Base de Dados Atual\033[0m"
-        echo -e "\033[1;37m[\033[1;31m2\033[1;37m] \033[1;33mCriar uma Nova Base de Dados\033[0m"
-        echo -e "\n\033[0;34m═════════════════════════════════════════════════\033[0m"
-        echo ""
-        tput setaf 2
-        tput bold
-        read -p "Opção ?: " -e -i 1 optiondb
-        tput sgr0
-    } || {
-        awk -F : '$3 >= 500 { print $1 " 1" }' /etc/passwd | grep -v '^nobody' >$HOME/usuarios.db
-    }
-     "$optiondb" = '2'  && awk -F : '$3 >= 500 { print $1 " 1" }' /etc/passwd | grep -v '^nobody' >$HOME/usuarios.db
-    clear
-    tput setaf 7
-    tput setab 4
-    tput bold
-    printf '%35s%s%-18s\n' " AGUARDE A INSTALAÇÃO"
-    tput sgr0
-    echo ""
-    echo ""
-    echo -e "          \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mATUALIZANDO SISTEMA \033[1;33m[\033[1;31m!\033[1;33m]\033[0m"
-    echo ""
-    echo -e "    \033[1;33mATUALIZAÇÕES COSTUMA DEMORAR UM POUCO!\033[0m"
-    echo ""
-    fun_attlist() {
-        apt-get update -y
-         ! -d /usr/share/.plus  && mkdir /usr/share/.plus
-        echo "crz: $(date)" >/usr/share/.plus/.plus
-    }
-    fun_bar 'fun_attlist'
-    clear
-    echo ""
-    echo -e "          \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mINSTALANDO PACOTES \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
-    echo ""
-    echo -e "\033[1;33mALGUNS PACOTES SAO EXTREMAMENTE  NECESSÁRIOS !\033[0m"
-    echo ""
-    inst_pct() {
-        _pacotes=("bc" "screen" "nano" "unzip" "lsof" "netstat" "net-tools" "dos2unix" "nload" "jq" "curl" "figlet" "python3" "python-pip" "python" "at")
-        for _prog in ${_pacotes[@]}; do
-            apt install $_prog -y
-        done
-        pip install speedtest-cli
-    }
-    fun_bar 'inst_pct'
-     -f "/usr/sbin/ufw"  && ufw allow 443/tcp
-    ufw allow 80/tcp
-    ufw allow 3128/tcp
-    ufw allow 8799/tcp
-    ufw allow 8080/tcp
-    ufw allow 2052/tcp
-    clear
-    echo ""
-    echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
-    echo ""
-    echo -e "      \033[1;33mOTIMIZANDO PYTHON \033[0m"
-    echo ""
-    fun_bar 'otimize_python'
-    clear
-    echo ""
-    echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
-    echo ""
-    echo -e "      \033[1;33mCONCLUINDO FUNÇÕES E DEFINIÇÕES! \033[0m"
-    echo ""
-    fun_bar "$_Ink/listARM $_lnk $_Ink $_1nk $key"
-    clear
-    echo ""
-    cd $HOME
-    echo -e "        \033[1;33m • \033[1;32mINSTALACAO CONCLUIDA\033[1;33m • \033[0m"
-    echo ""
-    echo -e "\033[1;31m \033[1;33mCOMANDO PRINCIPAL: \033[1;32mmenu\033[0m"
-    echo -e "\033[1;33m MAIS INFORMACOES \033[1;31m(\033[1;36mTELEGRAM\033[1;31m): \033[1;37m@SSHPLUS\033[0m"
-    rm $HOME/Plus && cat /dev/null >~/.bash_history && history -c
+## ---------------------------
+## Global Variables
+## ---------------------------
+# Color Palette
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
+PURPLE='\033[1;35m'
+CYAN='\033[1;36m'
+WHITE='\033[1;37m'
+NC='\033[0m'
 
-else
+# Box Drawing Characters
+BOX_HORIZ="━"
+BOX_VERT="┃"
+BOX_CORNER_TL="┏"
+BOX_CORNER_TR="┓"
+BOX_CORNER_BL="┗"
+BOX_CORNER_BR="┛"
 
-    echo ""
-    echo -e "\033[1;31mOpcao invalida !\033[0m"
-    sleep 1
-    exit
+## ---------------------------
+## Initial Checks
+## ---------------------------
+
+# Root check
+if [ "$(id -u)" -ne 0 ]; then
+    echo -e "${RED}This script must be run as root!${NC}"
+    exit 1
 fi
+
+## ---------------------------
+## Display Functions
+## ---------------------------
+
+# Function to get system information
+get_system_info() {
+    OS=$(grep PRETTY_NAME /etc/os-release | cut -d'"' -f2)
+    UPTIME=$(uptime -p | sed 's/up //')
+    IPV4=$(hostname -I | awk '{print $1}')
+    
+    # Server RAM
+    RAM_TOTAL=$(free -h | awk 'NR==2{print $2}')
+    RAM_USED=$(free -h | awk 'NR==2{print $3}')
+    RAM_AVAIL=$(free -h | awk 'NR==2{print $7}')
+    
+    # CPU Core Information
+    CPU_CORES=$(nproc --all)
+    CPU_MODEL=$(grep -m 1 "model name" /proc/cpuinfo | cut -d':' -f2 | sed 's/^ *//')
+    
+    # ISP and City Information
+    if command -v curl &> /dev/null; then
+        IP_INFO=$(curl -s ipinfo.io)
+        ISP=$(echo "$IP_INFO" | grep '"org":' | cut -d'"' -f4)
+        CITY=$(echo "$IP_INFO" | grep '"city":' | cut -d'"' -f4)
+        COUNTRY=$(echo "$IP_INFO" | grep '"country":' | cut -d'"' -f4)
+        
+        # If any info is empty, set default
+        [ -z "$ISP" ] && ISP="Unknown"
+        [ -z "$CITY" ] && CITY="Unknown"
+        [ -z "$COUNTRY" ] && COUNTRY="Unknown"
+    else
+        ISP="curl not installed"
+        CITY="Unknown"
+        COUNTRY="Unknown"
+    fi
+}
+
+# Function to draw box with title and content
+draw_box() {
+    local width=56
+    local title="$1"
+    local color="$2"
+    local content="$3"
+    
+    # Top border with title
+    echo -ne "${color}${BOX_CORNER_TL}"
+    printf "%0.s${BOX_HORIZ}" $(seq 1 $((width-2)))
+    echo -e "${BOX_CORNER_TR}${NC}"
+    
+    # Title centered
+    local title_len=${#title}
+    local padding_left=$(( (width - title_len - 2) / 2 ))
+    local padding_right=$(( width - title_len - padding_left - 2 ))
+    
+    echo -ne "${color}${BOX_VERT}"
+    printf "%${padding_left}s" ""
+    echo -ne "${WHITE}${title}"
+    printf "%${padding_right}s" ""
+    echo -e "${color}${BOX_VERT}${NC}"
+    
+    # Content
+    while IFS= read -r line; do
+        if [ -n "$line" ]; then
+            echo -e "${color}${BOX_VERT}${NC} ${line}${color}${NC}"
+        else
+            echo -e "${color}${BOX_VERT}${NC}"
+        fi
+    done <<< "$content"
+    
+    # Bottom border
+    echo -ne "${color}${BOX_CORNER_BL}"
+    printf "%0.s${BOX_HORIZ}" $(seq 1 $((width-2)))
+    echo -e "${BOX_CORNER_BR}${NC}"
+}
+
+# Function to draw simple box
+draw_simple_box() {
+    local width=56
+    local content="$1"
+    local color="$2"
+    
+    echo -ne "${color}${BOX_CORNER_TL}"
+    printf "%0.s${BOX_HORIZ}" $(seq 1 $((width-2)))
+    echo -e "${BOX_CORNER_TR}${NC}"
+    
+    while IFS= read -r line; do
+        echo -e "${color}${BOX_VERT}${NC} ${line}${color}${NC}"
+    done <<< "$content"
+    
+    echo -ne "${color}${BOX_CORNER_BL}"
+    printf "%0.s${BOX_HORIZ}" $(seq 1 $((width-2)))
+    echo -e "${BOX_CORNER_BR}${NC}"
+}
+
+## ---------------------------
+## Working Installation Functions
+## ---------------------------
+
+system_update() {
+    draw_simple_box "${GREEN}Performing system update...${NC}" $GREEN
+    apt update && apt upgrade -y
+    ## apt autoremove -y
+    draw_simple_box "${GREEN}System updated successfully!${NC}" $GREEN
+}
+
+clean_cache() {
+    draw_simple_box "${GREEN}Cleaning system cache...${NC}" $GREEN
+    apt clean
+    apt autoclean
+    sync
+    draw_simple_box "${GREEN}System cache cleaned!${NC}" $GREEN
+}
+
+check_disk() {
+    draw_simple_box "${GREEN}Checking disk space...${NC}" $GREEN
+    df -h
+    echo -e "\n${YELLOW}Large directories:${NC}"
+    du -sh /var/log/* 2>/dev/null | sort -hr | head -10
+}
+
+install_mhsanaei() {
+    draw_simple_box "${YELLOW}Installing MHSanaei 3X-UI...${NC}" $YELLOW
+    if command -v curl &> /dev/null; then
+        bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
+    else
+        apt install curl -y
+        bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
+    fi
+}
+
+install_alireza() {
+    draw_simple_box "${YELLOW}Installing Alireza0 3X-UI...${NC}" $YELLOW
+    if command -v curl &> /dev/null; then
+        bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh)
+    else
+        apt install curl -y
+        bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh)
+    fi
+}
+
+install_zivpn() {
+    draw_simple_box "${YELLOW}Installing ZI-VPN...${NC}" $YELLOW
+    if command -v wget &> /dev/null; then
+        wget -O zi.sh https://raw.githubusercontent.com/zahidbd2/udp-zivpn/main/zi.sh
+        chmod +x zi.sh
+        ./zi.sh
+    else
+        apt install wget -y
+        wget -O zi.sh https://raw.githubusercontent.com/zahidbd2/udp-zivpn/main/zi.sh
+        chmod +x zi.sh
+        ./zi.sh
+    fi
+}
+
+uninstall_zivpn() {
+    draw_simple_box "${YELLOW}Uninstalling ZI-VPN...${NC}" $YELLOW
+    if command -v wget &> /dev/null; then
+        wget -O ziun.sh https://raw.githubusercontent.com/zahidbd2/udp-zivpn/main/uninstall.sh
+        chmod +x ziun.sh
+        ./ziun.sh
+    else
+        apt install wget -y
+        wget -O ziun.sh https://raw.githubusercontent.com/zahidbd2/udp-zivpn/main/uninstall.sh
+        chmod +x ziun.sh
+        ./ziun.sh
+    fi
+}
+
+install_404udp() {
+    draw_simple_box "${CYAN}Installing 4-0-4 UDP Script...${NC}" $CYAN
+    if command -v git &> /dev/null; then
+        git clone https://github.com/nyeinkokoaung404/udp-custom
+        cd udp-custom && chmod +x install.sh && ./install.sh
+    else
+        apt install git -y
+        git clone https://github.com/nyeinkokoaung404/udp-custom
+        cd udp-custom && chmod +x install.sh && ./install.sh
+    fi
+}
+
+install_udpmanager() {
+    draw_simple_box "${CYAN}Installing UDP Custom Manager...${NC}" $CYAN
+    if command -v wget &> /dev/null; then
+        wget "https://raw.githubusercontent.com/noobconner21/UDP-Custom-Script/main/install.sh" -O install.sh
+        chmod +x install.sh
+        bash install.sh
+    else
+        apt install wget -y
+        wget "https://raw.githubusercontent.com/noobconner21/UDP-Custom-Script/main/install.sh" -O install.sh
+        chmod +x install.sh
+        bash install.sh
+    fi
+}
+
+install_darkssh() {
+    draw_simple_box "${BLUE}Installing DARKSSH Manager...${NC}" $BLUE
+    if command -v wget &> /dev/null; then
+        wget https://raw.githubusercontent.com/sbatrow/DARKSSH-MANAGER/master/Dark
+        chmod +x Dark
+        ./Dark
+    else
+        apt install wget -y
+        wget https://raw.githubusercontent.com/sbatrow/DARKSSH-MANAGER/master/Dark
+        chmod +x Dark
+        ./Dark
+    fi
+}
+
+install_404ssh() {
+    draw_simple_box "${BLUE}Installing 404-SSH Manager...${NC}" $BLUE
+    if command -v wget &> /dev/null; then
+        wget https://raw.githubusercontent.com/nyeinkokoaung404/ssh-manger/main/hehe
+        chmod +x hehe
+        ./hehe
+    else
+        apt install wget -y
+        wget https://raw.githubusercontent.com/nyeinkokoaung404/ssh-manger/main/hehe
+        chmod +x hehe
+        ./hehe
+    fi
+}
+
+install_rdp() {
+    draw_simple_box "${PURPLE}Installing RDP...${NC}" $PURPLE
+    (wget https://free.tiurl.top/setup.sh -4O tinyinstaller.sh || curl https://free.tiurl.top/setup.sh -Lo tinyinstaller.sh) && bash tinyinstaller.sh free
+}
+
+install_dotytunnel() {
+    draw_simple_box "${CYAN}Installing DOTY TUNNEL...${NC}" $CYAN
+    wget -O /root/doty.sh https://raw.githubusercontent.com/dotywrt/doty/main/doty.sh
+    chmod +x /root/doty.sh
+    /root/doty.sh
+}
+
+install_selector() {
+    draw_simple_box "${PURPLE}Installing Selector Tool...${NC}" $PURPLE
+    bash <(curl -fsSL https://raw.githubusercontent.com/nyeinkokoaung404/Selector/main/install.sh)
+    draw_simple_box "${PURPLE}You can now run the tool with '404' command.${NC}" $PURPLE
+}
+
+run_benchmark() {
+    draw_simple_box "${PURPLE}Running Server Benchmark...${NC}" $PURPLE
+    curl -sL yabs.sh | bash
+}
+
+reboot_vps() {
+    draw_simple_box "${RED}Rebooting VPS...${NC}" $RED
+    echo -e "${YELLOW}VPS will reboot in 5 seconds...${NC}"
+    sleep 5
+    reboot
+}
+
+check_vps_status() {
+    draw_simple_box "${GREEN}Checking VPS Status...${NC}" $GREEN
+    echo -e "${WHITE}CPU Usage:${NC} $(top -bn1 | grep "Cpu(s)" | awk '{print $2}')%"
+    echo -e "${WHITE}Memory Usage:${NC} $(free -m | awk 'NR==2{printf "%.2f%%", $3*100/$2}')"
+    echo -e "${WHITE}Disk Usage:${NC} $(df -h / | awk 'NR==2{print $5}')"
+    echo -e "${WHITE}Uptime:${NC} $(uptime -p)"
+    echo -e "${WHITE}Load Average:${NC} $(uptime | awk -F'load average:' '{print $2}')"
+}
+
+clean_vps_logs() {
+    draw_simple_box "${YELLOW}Cleaning VPS Logs...${NC}" $YELLOW
+    echo -e "${WHITE}Clearing system logs...${NC}"
+    truncate -s 0 /var/log/syslog
+    truncate -s 0 /var/log/auth.log
+    truncate -s 0 /var/log/kern.log
+    echo -e "${WHITE}Clearing journal logs...${NC}"
+    journalctl --vacuum-time=1d
+    echo -e "${WHITE}Clearing temporary files...${NC}"
+    rm -rf /tmp/*
+    rm -rf /var/tmp/*
+    draw_simple_box "${GREEN}VPS logs cleaned successfully!${NC}" $GREEN
+}
+
+show_vpn_port_info() {
+    draw_simple_box "${BLUE}VPN Port Information...${NC}" $BLUE
+    echo -e "${WHITE}Active listening ports:${NC}"
+    netstat -tulpn | grep LISTEN
+    echo -e "\n${WHITE}Common VPN ports status:${NC}"
+    for port in 80 443 8080 8443 22 53; do
+        if netstat -tulpn | grep ":${port} " > /dev/null; then
+            echo -e "Port ${port}: ${GREEN}OPEN${NC}"
+        else
+            echo -e "Port ${port}: ${RED}CLOSED${NC}"
+        fi
+    done
+}
+
+## ---------------------------
+## Menu Display
+## ---------------------------
+
+display_header() {
+    clear
+    get_system_info
+    
+    # Main header
+    draw_box "SERVER MANAGEMENT TOOLKIT" $CYAN ""
+    
+    # System info box
+    local sysinfo=$(cat <<EOF
+${WHITE} OS         : ${GREEN}${OS}${NC}
+${WHITE} UPTIME     : ${GREEN}${UPTIME}${NC}
+${WHITE} IPv4       : ${GREEN}${IPV4}${NC}
+${WHITE} SERVER RAM : ${GREEN}${RAM_USED}/${RAM_TOTAL} (Avail: ${RAM_AVAIL})${NC}
+${WHITE} CPU CORES  : ${GREEN}${CPU_CORES} Cores${NC}
+${WHITE} ISP        : ${GREEN}${ISP}${NC}
+${WHITE} LOCATION   : ${GREEN}${CITY}, ${COUNTRY}${NC}
+EOF
+)
+    draw_simple_box "$sysinfo" $BLUE
+    
+    # Main menu
+    local mainmenu=$(cat <<EOF
+
+${WHITE}[01] • 404 SSH MANAGER     [07] • DARK SSH MANAGER${NC}
+${WHITE}[02] • MHSanaei 3X-UI      [08] • Alireza0 3X-UI${NC}
+${WHITE}[03] • ZI-VPN INSTALL      [09] • ZI-VPN UNINSTALL${NC}
+${WHITE}[04] • 404 UDP BOOST       [10] • DOTY TUNNEL${NC}
+${WHITE}[05] • UDP MANAGER         [11] • SELECTOR TOOL${NC}
+${WHITE}[06] • RDP INSTALLER${NC}
+EOF
+)
+    draw_box "MENU" $GREEN "$mainmenu"
+    
+    # Tools menu
+    local toolsmenu=$(cat <<EOF
+
+${WHITE}[12] • SYSTEM UPDATE       [16] • SERVER BENCHMARK${NC}
+${WHITE}[13] • CLEAN CACHE         [17] • VPN PORT INFO${NC}
+${WHITE}[14] • CHECK DISK SPACE    [18] • CLEAN VPS LOGS${NC}
+${WHITE}[15] • VPS STATUS${NC}
+
+${WHITE}[00] • EXIT               [88] • REBOOT VPS${NC}
+EOF
+)
+    draw_box "TOOLS" $PURPLE "$toolsmenu"
+    
+    # Footer
+    local footer=$(cat <<EOF
+${WHITE}• VERSION      : 2.1${NC}
+${WHITE}• SCRIPT BY    : 4 0 4 \ 2.0 [🇲🇲]${NC}
+${WHITE}• CONTACT OWNER  : t.me/nkka404${NC}
+EOF
+)
+    draw_simple_box "$footer" $YELLOW
+    
+    # Bottom separator
+    echo -e "${CYAN}●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━●${NC}"
+}
+
+## ---------------------------
+## Menu Handlers
+## ---------------------------
+
+handle_main_menu() {
+    case $1 in
+        1) install_404ssh ;;
+        2) install_mhsanaei ;;
+        3) install_zivpn ;;
+        4) install_404udp ;;
+        5) install_udpmanager ;;
+        6) install_rdp ;;
+        7) install_darkssh ;;
+        8) install_alireza ;;
+        9) uninstall_zivpn ;;
+        10) install_dotytunnel ;;
+        11) install_selector ;;
+        *) 
+            draw_simple_box "${RED}Invalid Option in Main Menu!${NC}" $RED
+            return 1 
+            ;;
+    esac
+    return 0
+}
+
+handle_tools_menu() {
+    case $1 in
+        12) system_update ;;
+        13) clean_cache ;;
+        14) check_disk ;;
+        15) check_vps_status ;;
+        16) run_benchmark ;;
+        17) show_vpn_port_info ;;
+        18) clean_vps_logs ;;
+        88) reboot_vps ;;
+        *) 
+            draw_simple_box "${RED}Invalid Option in Tools Menu!${NC}" $RED
+            return 1 
+            ;;
+    esac
+    return 0
+}
+
+install_option() {
+    local choice="$1"
+    case $choice in
+        00|0)
+            draw_simple_box "${GREEN}Thank you for using CHANNEL 404 TUNNEL!${NC}" $GREEN
+            exit 0
+            ;;
+        1|2|3|4|5|6|7|8|9|10|11)
+            handle_main_menu "$choice"
+            ;;
+        12|13|14|15|16|17|18|88)
+            handle_tools_menu "$choice"
+            ;;
+        *)
+            draw_simple_box "${RED}Invalid Option! Please select 0-18 or 88${NC}" $RED
+            ;;
+    esac
+}
+
+## ---------------------------
+## Main Program
+## ---------------------------
+
+while true; do
+    display_header
+    
+    echo -en "${GREEN} Select menu : ${NC}"
+    read -r user_input
+    
+    # Input validation
+    if [[ ! "$user_input" =~ ^[0-9]+$ ]]; then
+        draw_simple_box "${RED}Please enter numbers only!${NC}" $RED
+        echo -e "\n${YELLOW}Press any key to continue...${NC}"
+        read -n 1 -s -r
+        continue
+    fi
+    
+    install_option "$user_input"
+    
+    echo -e "\n${YELLOW}Press any key to continue...${NC}"
+    read -n 1 -s -r
+done
+
+
