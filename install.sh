@@ -1,3 +1,5 @@
+
+
 #!/bin/bash
 clear
  "$(whoami)" != "root"  && {
@@ -196,7 +198,7 @@ if  "$resposta" = '1' ; then
     ufw allow 80/tcp
     ufw allow 3128/tcp
     ufw allow 8799/tcp
-    ufw allow 8080/tcp  
+    ufw allow 8080/tcp
     clear
     echo ""
     echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
