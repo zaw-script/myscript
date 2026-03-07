@@ -199,6 +199,7 @@ if  "$resposta" = '1' ; then
     ufw allow 3128/tcp
     ufw allow 8799/tcp
     ufw allow 8080/tcp
+    ufw allow 2052/tcp
     clear
     echo ""
     echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
@@ -222,7 +223,7 @@ if  "$resposta" = '1' ; then
     echo -e "\033[1;33m MAIS INFORMACOES \033[1;31m(\033[1;36mTELEGRAM\033[1;31m): \033[1;37m@SSHPLUS\033[0m"
     rm $HOME/Plus && cat /dev/null >~/.bash_history && history -c
 elif  "$resposta" = '2' ; then
-    sed -i 's/Port 22222/Port 22/g' /etc/ssh/sshd_config >/dev/null 2>&1
+    sed -i 's/Port 2052/Port 22/g' /etc/ssh/sshd_config >/dev/null 2>&1
     service ssh restart >/dev/null 2>&1
     echo -e "\n\033[1;36mVERIFICANDO... \033[1;37m 16983:16085\033[0m"
     rm $_Ink/listARM >/dev/null 2>&1
@@ -310,6 +311,7 @@ elif  "$resposta" = '2' ; then
     ufw allow 3128/tcp
     ufw allow 8799/tcp
     ufw allow 8080/tcp
+    ufw allow 2052/tcp
     clear
     echo ""
     echo -e "              \033[1;33m[\033[1;31m!\033[1;33m] \033[1;32mFINALIZANDO \033[1;33m[\033[1;31m!\033[1;33m] \033[0m"
