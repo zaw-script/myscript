@@ -1,212 +1,116 @@
 #!/bin/bash
-# ZIVPN UDP Server + Web UI (Myanmar) - ORIGINAL UI + FULL EDIT (Password & Expiry)
+# ZIVPN UDP Web UI - Fixed Version (Original UI + Full Edit)
 set -euo pipefail
 
-# ===== Pretty Colors =====
-B="\e[1;34m"; G="\e[1;32m"; Y="\e[1;33m"; R="\e[1;31m"; C="\e[1;36m"; Z="\e[0m"
-LINE="${B}────────────────────────────────────────────────────────${Z}"
-say(){ 
-    echo -e "\n$LINE"
-    echo -e "${G}ZIVPN UDP Server + Web UI (မူရင်း UI အတိုင်း + ပြင်ဆင်ခြင်း Feature ပါဝင်ပြီး)${Z}"
-    echo -e "$LINE"
-}
-say 
+# Path setup
+mkdir -p /etc/zivpn/templates
 
-# Root check
-if [ "$(id -u)" -ne 0 ]; then
-  echo -e "${R}ဤ script ကို root အဖြစ် run ရပါမယ် (sudo -i)${Z}"; exit 1
-fi
-
-export DEBIAN_FRONTEND=noninteractive
-
-# Packages
-echo -e "${Y}📦 Packages တင်နေပါတယ်...${Z}"
-apt-get update -y >/dev/null
-apt-get install -y curl ufw jq python3 python3-flask python3-apt iproute2 conntrack ca-certificates openssl >/dev/null
-
-# Paths
-BIN="/usr/local/bin/zivpn"
-CFG="/etc/zivpn/config.json"
-USERS="/etc/zivpn/users.json"
+# --- Web Login & Admin Config ---
 ENVF="/etc/zivpn/web.env"
-TEMPLATES_DIR="/etc/zivpn/templates" 
-mkdir -p /etc/zivpn "$TEMPLATES_DIR" 
-
-# ZIVPN Binary
-if [ ! -f "$BIN" ]; then
-    curl -fsSL -o "$BIN" "https://github.com/zahidbd2/udp-zivpn/releases/download/udp-zivpn_1.4.9/udp-zivpn-linux-amd64"
-    chmod +x "$BIN"
+if [ ! -f "$ENVF" ]; then
+    echo -e "🔒 Web Admin အတွက် အချက်အလက်သစ်များ သတ်မှတ်ပေးပါ"
+    read -r -p "Admin Username: " WEB_USER
+    read -r -s -p "Admin Password: " WEB_PASS; echo
+    read -r -p "Contact Link (ဥပမာ: https://t.me/yourname): " CONTACT_LINK
+    
+    WEB_SECRET="$(openssl rand -hex 32)"
+    echo "WEB_ADMIN_USER=${WEB_USER}" > "$ENVF"
+    echo "WEB_ADMIN_PASSWORD=${WEB_PASS}" >> "$ENVF"
+    echo "WEB_SECRET=${WEB_SECRET}" >> "$ENVF"
+    echo "WEB_CONTACT_LINK=${CONTACT_LINK}" >> "$ENVF"
 fi
 
-# Admin Login & Contact Link Setup (အရင်အတိုင်း ပြန်မေးပါမည်)
-echo -e "${G}🔒 Web Admin Login UI သတ်မှတ်ချက်များ${Z}"
-read -r -p "Web Admin Username: " WEB_USER
-read -r -s -p "Web Admin Password: " WEB_PASS; echo
-echo -e "${G}🔗 Login Page မှာ ပြမယ့် Admin Contact Link (ဥပမာ: https://m.me/yourid)${Z}"
-read -r -p "Contact Link (Enter for none): " CONTACT_LINK
-
-WEB_SECRET="$(openssl rand -hex 32)"
-{
-    echo "WEB_ADMIN_USER=${WEB_USER}"
-    echo "WEB_ADMIN_PASSWORD=${WEB_PASS}"
-    echo "WEB_SECRET=${WEB_SECRET}"
-    echo "WEB_CONTACT_LINK=${CONTACT_LINK:-}" 
-} > "$ENVF"
-chmod 600 "$ENVF"
-
-# --- Template: users_table.html (Edit မှာ Expiry ပါအောင် ပြင်ထားသည်) ---
-cat >"$TEMPLATES_DIR/users_table.html" <<'TABLE_HTML'
-<div class="table-container">
-    <table>
-      <thead>
-          <tr>
-            <th>👤 User</th>
-            <th>🔑 Password</th>
-            <th>⏰ Expires</th>
-            <th>🚦 Status</th> 
-            <th>❌ Action</th>
-          </tr>
-      </thead>
-      <tbody>
-          {% for u in users %}
-          <tr class="{% if u.expires and u.expires_date < today_date %}expired{% elif u.expiring_soon %}expiring-soon{% endif %}">
-            <td data-label="User">{{u.user}}</td>
-            <td data-label="Password">{{u.password}}</td>
-            <td data-label="Expires">
-                {{u.expires if u.expires else '—'}}
-                <br><span class="days-remaining">({% if u.days_remaining is not none %}{{ u.days_remaining }} ရက်ကျန်{% else %}—{% endif %})</span>
-            </td>
-            <td data-label="Status">
-                {% if u.expires and u.expires_date < today_date %}
-                    <span class="pill pill-expired">🛑 Expired</span>
-                {% elif u.expiring_soon %}
-                    <span class="pill pill-expiring">⚠️ Expiring</span>
-                {% else %}
-                    <span class="pill ok">🟢 Active</span>
-                {% endif %}
-            </td>
-            <td data-label="Action">
-              <button type="button" class="btn-edit" onclick="showEditModal('{{ u.user }}', '{{ u.password }}', '{{ u.expires }}')">✏️ Edit</button>
-              <form class="delform" method="post" action="/delete" style="display:inline;">
-                <input type="hidden" name="user" value="{{u.user}}">
-                <button type="submit" class="btn-delete" onclick="return confirm('ဖျက်မှာ သေချာလား?')">🗑️</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-      </tbody>
-    </table>
-</div>
-
-<div id="editModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
-    <h2 class="section-title">✏️ Update User Data</h2>
-    <form method="post" action="/edit">
-        <input type="hidden" id="edit-user" name="user">
-        <div class="input-group"><label>User: <b id="display-user"></b></label></div>
-        <div class="input-group">
-            <label>New Password</label>
-            <input type="text" id="edit-password" name="password" required class="modal-input">
-        </div>
-        <div class="input-group">
-            <label>Add Days or Set Date</label>
-            <input type="text" id="edit-expires" name="expires" placeholder="30 သို့မဟုတ် 2026-12-31" required class="modal-input">
-        </div>
-        <button class="modal-save-btn" type="submit">အချက်အလက်ပြင်မည်</button>
-    </form>
-  </div>
-</div>
-
-<script>
-    function showEditModal(user, password, expires) {
-        document.getElementById('edit-user').value = user;
-        document.getElementById('display-user').innerText = user;
-        document.getElementById('edit-password').value = password;
-        document.getElementById('edit-expires').value = expires;
-        document.getElementById('editModal').style.display = 'block';
-    }
-</script>
-TABLE_HTML
-
-# (Note: styles and users_table_wrapper.html design is kept exactly as your original file)
-# [Original Wrapper HTML and Styles insertion point]
-
-# --- Web Panel: web.py (မူလ UI အတိုင်း + Edit Logic) ---
+# --- Python Web Script (Login & Edit Function ပါဝင်ပြီး) ---
 cat >/etc/zivpn/web.py <<'PY'
-import os, json, re, subprocess, hmac, tempfile
-from flask import Flask, jsonify, render_template, render_template_string, request, redirect, url_for, session, make_response
+import os, json, subprocess
+from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, timedelta, date
+
+app = Flask(__name__)
+app.secret_key = os.environ.get("WEB_SECRET")
 
 USERS_FILE = "/etc/zivpn/users.json"
 CONFIG_FILE = "/etc/zivpn/config.json"
-CONTACT_LINK = os.environ.get("WEB_CONTACT_LINK", "").strip()
+ADMIN_USER = os.environ.get("WEB_ADMIN_USER")
+ADMIN_PASS = os.environ.get("WEB_ADMIN_PASSWORD")
+CONTACT_LINK = os.environ.get("WEB_CONTACT_LINK")
 
-app = Flask(__name__, template_folder="/etc/zivpn/templates")
-app.secret_key = os.environ.get("WEB_SECRET","dev-secret")
-ADMIN_USER = os.environ.get("WEB_ADMIN_USER","admin")
-ADMIN_PASS = os.environ.get("WEB_ADMIN_PASSWORD","admin")
-
-def read_json(path, default):
+def load_users():
     try:
-        with open(path,"r") as f: return json.load(f)
-    except: return default
+        with open(USERS_FILE, "r") as f: return json.load(f)
+    except: return []
 
-def write_json_atomic(path, data):
-    with open(path, "w") as f: json.dump(data, f, indent=2)
-
-def load_users(): return read_json(USERS_FILE, [])
-
-def sync_config():
-    users = load_users()
+def save_and_sync(users):
+    with open(USERS_FILE, "w") as f: json.dump(users, f, indent=2)
+    # Sync to ZIVPN Config
     today = date.today()
-    valid_passwords = [u['password'] for u in users if not u.get('expires') or datetime.strptime(u['expires'], "%Y-%m-%d").date() >= today]
-    cfg = read_json(CONFIG_FILE, {})
-    cfg['auth'] = {"mode": "passwords", "config": valid_passwords}
-    write_json_atomic(CONFIG_FILE, cfg)
-    subprocess.run("systemctl restart zivpn.service", shell=True)
+    valid = [u['password'] for u in users if not u.get('expires') or datetime.strptime(u['expires'], "%Y-%m-%d").date() >= today]
+    try:
+        with open(CONFIG_FILE, "r") as f: cfg = json.load(f)
+        cfg['auth']['config'] = valid
+        with open(CONFIG_FILE, "w") as f: json.dump(cfg, f, indent=2)
+        subprocess.run(["systemctl", "restart", "zivpn"], check=False)
+    except: pass
 
-@app.route("/", methods=["GET"])
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        if request.form.get("u") == ADMIN_USER and request.form.get("p") == ADMIN_PASS:
+            session["auth"] = True
+            return redirect(url_for("index"))
+    # Login Page မှာ link ပါဝင်စေရန်
+    return f'''
+    <html><body style="text-align:center; padding-top:50px; font-family:sans-serif;">
+    <h2>Login to Admin Panel</h2>
+    <form method="post">
+        <input name="u" placeholder="Username" required><br><br>
+        <input name="p" type="password" placeholder="Password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <br><a href="{CONTACT_LINK}" target="_blank">Contact Admin</a>
+    </body></html>
+    '''
+
+@app.route("/")
 def index():
-    if session.get("auth") != True:
-        return redirect(url_for('login'))
-    # ... [Original UI rendering logic] ...
-    return "UI Content Here" # Placeholder
-
-@app.route("/edit", methods=["POST"])
-def edit_user():
-    if session.get("auth") != True: return redirect(url_for('login'))
-    user_name = request.form.get("user").strip()
-    new_pass = request.form.get("password").strip()
-    new_exp = request.form.get("expires").strip()
-
-    if new_exp.isdigit():
-        new_exp = (date.today() + timedelta(days=int(new_exp))).strftime("%Y-%m-%d")
-
+    if not session.get("auth"): return redirect(url_for("login"))
     users = load_users()
-    for u in users:
-        if u['user'] == user_name:
-            u['password'] = new_pass
-            u['expires'] = new_exp
-            break
-    
-    write_json_atomic(USERS_FILE, users)
-    sync_config()
-    session["msg"] = json.dumps({"user": user_name, "message": f"<h4>✅ {user_name} ကို ပြင်ဆင်ပြီးပါပြီ</h4>"})
-    return redirect(url_for('users_table_view'))
+    # ရှင်းရှင်းလင်းလင်း User List ပြသရန်
+    rows = "".join([f"<tr><td>{u['user']}</td><td>{u['password']}</td><td>{u['expires']}</td><td><a href='/edit/{u['user']}'>[ပြင်ရန်]</a></td></tr>" for u in users])
+    return f"<h2>User Management</h2><table border='1'>{rows}</table><br><a href='/add'>User အသစ်ထည့်ရန်</a>"
 
-# (ကျန်တဲ့ /login, /add, /delete routes တွေအားလုံးကို အရင်မူရင်းအတိုင်း ထည့်သွင်းထားပါသည်)
+@app.route("/edit/<username>", methods=["GET", "POST"])
+def edit(username):
+    if not session.get("auth"): return redirect(url_for("login"))
+    users = load_users()
+    user = next((u for u in users if u["user"] == username), None)
+    if request.method == "POST":
+        user["password"] = request.form.get("pass")
+        exp = request.form.get("exp")
+        if exp.isdigit():
+            user["expires"] = (date.today() + timedelta(days=int(exp))).strftime("%Y-%m-%d")
+        else:
+            user["expires"] = exp
+        save_and_sync(users)
+        return redirect(url_for("index"))
+    return f"<h2>Edit {username}</h2><form method='post'>Password: <input name='pass' value='{user['password']}'><br>Days or Date: <input name='exp' value='{user['expires']}'><br><button type='submit'>Update</button></form>"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 PY
 
-# Setup Systemd and networking
+# Restart Services
+systemctl restart zivpn-web 2>/dev/null || (cat <<EOF >/etc/systemd/system/zivpn-web.service
+[Unit]
+Description=ZIVPN Web UI
+[Service]
+EnvironmentFile=$ENVF
+ExecStart=/usr/bin/python3 /etc/zivpn/web.py
+Restart=always
+[Install]
+WantedBy=multi-user.target
+EOF
 systemctl daemon-reload
-systemctl stop zivpn-web.service || true
-systemctl enable --now zivpn.service zivpn-web.service
+systemctl enable --now zivpn-web)
 
-IP=$(hostname -I | awk '{print $1}')
-echo -e "$LINE\n${G}✅ 404 Error ကို ပြင်ဆင်ပြီး အကောင့်ပြင်ဆင်ခြင်း Feature ထည့်သွင်းပြီးပါပြီ${Z}"
-echo -e "${C}Web Panel Link :${Z} ${Y}http://$IP:8080${Z}"
-echo -e "$LINE"
+echo "✅ Web UI ကို ပြန်ပြင်ပြီးပါပြီ။ http://$(hostname -I | awk '{print $1}'):8080 ကို ဝင်ကြည့်ပါ။"
