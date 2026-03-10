@@ -1,24 +1,25 @@
 #!/bin/bash
-# ZIVPN Original Orange UI - Standard Version
+# ZIVPN Reset & Fix: Force Login Setup + Full UI
 set -euo pipefail
 
-# 1. Folder structure သေချာပြန်ဆောက်မယ်
-mkdir -p /etc/zivpn/templates
+# ၁။ အချက်အလက်ဟောင်းတွေကို အမြစ်ပြတ်ဖျက်မယ်
+rm -f /etc/zivpn/web.env
+rm -f /etc/zivpn/web.py
 
-# 2. Login အချက်အလက် (မရှိသေးရင် မေးပါမယ်)
+# ၂။ Login အသစ်ပြန်တောင်းမယ်
+echo -e "\e[1;33m🔒 Web Panel အတွက် Login အချက်အလက်အသစ် သတ်မှတ်ပေးပါ\e[0m"
+read -r -p "Admin Username ပေးပါ: " WEB_USER
+read -r -p "Admin Password ပေးပါ: " WEB_PASS
+read -r -p "Contact Link (ဥပမာ Telegram): " CONTACT_LINK
+
+# ၃။ web.env ဖိုင်အသစ်ရေးမယ်
 ENVF="/etc/zivpn/web.env"
-if [ ! -f "$ENVF" ]; then
-    echo -e "\e[1;33m🔒 Web Admin Login သတ်မှတ်ပေးပါ\e[0m"
-    read -r -p "Admin Username: " WEB_USER
-    read -r -s -p "Admin Password: " WEB_PASS; echo
-    read -r -p "Contact Link (ဥပမာ Telegram): " CONTACT_LINK
-    echo "WEB_ADMIN_USER=${WEB_USER}" > "$ENVF"
-    echo "WEB_ADMIN_PASSWORD=${WEB_PASS}" >> "$ENVF"
-    echo "WEB_SECRET=$(openssl rand -hex 32)" >> "$ENVF"
-    echo "WEB_CONTACT_LINK=${CONTACT_LINK}" >> "$ENVF"
-fi
+echo "WEB_ADMIN_USER=${WEB_USER}" > "$ENVF"
+echo "WEB_ADMIN_PASSWORD=${WEB_PASS}" >> "$ENVF"
+echo "WEB_SECRET=$(openssl rand -hex 32)" >> "$ENVF"
+echo "WEB_CONTACT_LINK=${CONTACT_LINK}" >> "$ENVF"
 
-# 3. Python Web Script (Original Design + Password + Contact Link)
+# ၄။ Python Web Script (Original UI + Password Column + IP)
 cat >/etc/zivpn/web.py <<'PY'
 import os, json, subprocess, socket
 from flask import Flask, render_template_string, request, redirect, url_for, session
@@ -37,10 +38,8 @@ def get_ip():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except: return "IP Not Found"
+        return s.getsockname()[0]
+    except: return "IP Unknown"
 
 def load_users():
     try:
@@ -49,29 +48,17 @@ def load_users():
     except: pass
     return []
 
-def save_and_sync(users):
-    with open(USERS_FILE, "w") as f: json.dump(users, f, indent=2)
-    today = date.today()
-    valid = [u['password'] for u in users if not u.get('expires') or datetime.strptime(u['expires'], "%Y-%m-%d").date() >= today]
-    try:
-        if os.path.exists(CONFIG_FILE):
-            with open(CONFIG_FILE, "r") as f: cfg = json.load(f)
-            cfg['auth']['config'] = valid
-            with open(CONFIG_FILE, "w") as f: json.dump(cfg, f, indent=2)
-            subprocess.run(["systemctl", "restart", "zivpn"], check=False)
-    except: pass
-
 STYLE = '''
 <style>
     body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; text-align: center; }
     .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
     .logo-circle { background: white; width: 80px; height: 80px; border-radius: 50%; border: 4px solid #ff851b; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
-    .logo-circle span { color: #ff851b; font-size: 24px; font-weight: bold; border: 2px solid #ff851b; border-radius: 50%; padding: 8px; }
-    input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
-    .btn { background: #ff851b; color: white; border: none; padding: 12px; width: 95%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .logo-circle span { color: #ff851b; font-size: 24px; font-weight: bold; }
+    input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; }
+    .btn { background: #ff851b; color: white; border: none; padding: 12px; width: 95%; border-radius: 10px; font-weight: bold; cursor: pointer; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; text-align: left; }
     th, td { padding: 10px; border-bottom: 1px solid #eee; }
-    .ip-box { color: #ff851b; font-weight: bold; margin: 10px 0; font-size: 15px; }
+    .ip-box { color: #ff851b; font-weight: bold; margin: 10px 0; }
 </style>
 '''
 
@@ -84,7 +71,7 @@ def login():
     return render_template_string(STYLE + '''
     <div class="card">
         <div class="logo-circle"><span>ZIV</span></div>
-        <h2 style="margin:5px;">ZIVPN Panel</h2>
+        <h2>ZIVPN Panel</h2>
         <div class="ip-box">Server IP: {{ip}}</div>
         <form method="post">
             <input name="u" placeholder="👤 Admin Username" required>
@@ -101,12 +88,11 @@ def dashboard():
     users = load_users()
     return render_template_string(STYLE + '''
     <div class="card">
-        <h3 style="margin:0;">Dashboard</h3>
-        <div class="ip-box">Server IP: {{ip}}</div>
+        <h3>Dashboard</h3>
         <form action="/add" method="post">
             <input name="u" placeholder="👤 New Username" required>
-            <input name="p" placeholder="🔑 New Password" required>
-            <input name="e" placeholder="📅 Expiration (e.g. 30)" required>
+            <input name="p" placeholder="🔑 Password" required>
+            <input name="e" placeholder="📅 ရက်ပေါင်း (ဥပမာ 30)" required>
             <button class="btn" type="submit">Create Account</button>
         </form>
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
@@ -117,13 +103,13 @@ def dashboard():
                 <td>{{ u.user }}</td>
                 <td><code>{{ u.password }}</code></td>
                 <td>{{ u.expires }}</td>
-                <td><a href="/delete/{{ u.user }}" style="color:red; text-decoration:none;" onclick="return confirm('ဖျက်မှာ သေချာလား?')">🗑️ ဖျက်ရန်</a></td>
+                <td><a href="/delete/{{ u.user }}" style="color:red;" onclick="return confirm('ဖျက်မှာလား?')">🗑️</a></td>
             </tr>
             {% endfor %}
         </table>
         <br><a href="/logout" style="color:gray; font-size:12px;">Logout</a>
     </div>
-    ''', count=len(users), users=users, ip=get_ip())
+    ''', users=users, ip=get_ip())
 
 @app.route("/add", methods=["POST"])
 def add_user():
@@ -132,14 +118,14 @@ def add_user():
     u, p, e = request.form.get("u"), request.form.get("p"), request.form.get("e")
     exp = (date.today() + timedelta(days=int(e))).strftime("%Y-%m-%d") if e.isdigit() else e
     users.append({"user": u, "password": p, "expires": exp})
-    save_and_sync(users)
+    with open(USERS_FILE, "w") as f: json.dump(users, f, indent=2)
     return redirect(url_for("dashboard"))
 
 @app.route("/delete/<username>")
 def delete_user(username):
     if not session.get("auth"): return redirect(url_for("login"))
     users = [u for u in load_users() if u["user"] != username]
-    save_and_sync(users)
+    with open(USERS_FILE, "w") as f: json.dump(users, f, indent=2)
     return redirect(url_for("dashboard"))
 
 @app.route("/logout")
@@ -151,13 +137,12 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 PY
 
-# 4. Restart Service
+# ၅။ Service Restart
 systemctl daemon-reload
 systemctl stop zivpn-web || true
 cat <<EOF >/etc/systemd/system/zivpn-web.service
 [Unit]
 Description=ZIVPN Web Service
-After=network.target
 [Service]
 EnvironmentFile=$ENVF
 ExecStart=/usr/bin/python3 /etc/zivpn/web.py
@@ -167,5 +152,4 @@ WantedBy=multi-user.target
 EOF
 systemctl enable --now zivpn-web
 
-echo -e "\e[1;32m✅ အရင်အတိုင်း Orange UI ပြန်ရပါပြီ Bro!\e[0m"
-echo -e "Link: http://$(hostname -I | awk '{print $1}'):8080"
+echo -e "\e[1;32m✅ အားလုံး အဆင်ပြေသွားပါပြီ Bro။ Login အချက်အလက်သစ်နဲ့ ဝင်ကြည့်လိုက်ပါ!\e[0m"
