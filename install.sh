@@ -1,6 +1,6 @@
 #!/bin/bash
-# ZIVPN Final Stable Fix
-cat >/etc/zivpn/web.py <<'PY'
+# ZIVPN Final Stable Version
+cat <<'PY' >/etc/zivpn/web.py
 import os, json, subprocess, socket
 from flask import Flask, render_template_string, request, redirect, url_for, session
 from datetime import datetime, timedelta, date
@@ -25,7 +25,7 @@ def load_users():
     try:
         if os.path.exists(USERS_FILE):
             with open(USERS_FILE, "r") as f: return json.load(f)
-    except: pass
+    except: return []
     return []
 
 def save_and_sync(users):
@@ -83,7 +83,7 @@ def dashboard():
     <div class="card">
         <h3 style="margin:0;">User Dashboard</h3>
         <div class="ip-box">Server IP: {{ip}}</div>
-        <div class="user-count">👥 လက်ရှိ Member User စုစုပေါင်း - {{ users|length }} ယောက်</div>
+        <div class="user-count">👥 စုစုပေါင်း Member: {{ users|length }} ယောက်</div>
         <form action="/add" method="post">
             <input name="u" placeholder="👤 Username" required>
             <input name="p" placeholder="🔑 Password" required>
@@ -126,7 +126,7 @@ def edit_user(username):
         <h3>📝 ပြင်ဆင်ရန်: {username}</h3>
         <form method="post">
             <input name="p" value="{user['password']}" placeholder="Password" required>
-            <input name="e" value="{user['expires']}" placeholder="Days or YYYY-MM-DD" required>
+            <input name="e" value="{user['expires']}" placeholder="Days" required>
             <button class="btn" type="submit">Update Account</button>
         </form>
         <br><a href="/dashboard" style="color:gray; text-decoration:none;">Back to Dashboard</a>
@@ -159,4 +159,4 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 PY
 systemctl restart zivpn-web
-echo "Panel updated successfully."
+echo "Panel is now running."
