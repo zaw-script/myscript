@@ -1,6 +1,5 @@
 #!/bin/bash
-# ZIVPN Final Fix: Only adding User Count, keeping everything else exactly as is.
-
+# ZIVPN Final Stable Fix
 cat >/etc/zivpn/web.py <<'PY'
 import os, json, subprocess, socket
 from flask import Flask, render_template_string, request, redirect, url_for, session
@@ -159,6 +158,5 @@ def logout():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 PY
-
 systemctl restart zivpn-web
-echo "Panel updated successfully with User Count."
+echo "Panel updated successfully."
