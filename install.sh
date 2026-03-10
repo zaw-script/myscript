@@ -1,6 +1,5 @@
 #!/bin/bash
-# ZIVPN Final Stable Version
-cat <<'PY' >/etc/zivpn/web.py
+cat >/etc/zivpn/web.py <<'PY'
 import os, json, subprocess, socket
 from flask import Flask, render_template_string, request, redirect, url_for, session
 from datetime import datetime, timedelta, date
@@ -25,7 +24,7 @@ def load_users():
     try:
         if os.path.exists(USERS_FILE):
             with open(USERS_FILE, "r") as f: return json.load(f)
-    except: return []
+    except: pass
     return []
 
 def save_and_sync(users):
@@ -159,4 +158,4 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 PY
 systemctl restart zivpn-web
-echo "Panel is now running."
+echo "Panel updated successfully."
