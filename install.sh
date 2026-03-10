@@ -1,11 +1,30 @@
 #!/bin/bash
+# ZIVPN Original Orange UI - Fixed with Link & Edit Feature
+set -euo pipefail
+
+# 1. Login အဟောင်းကို ရှင်းပြီး အသစ်ပြန်တောင်းမယ်
+rm -f /etc/zivpn/web.env
+mkdir -p /etc/zivpn/templates
+
+echo -e "\e[1;33m🔒 Web Panel အတွက် Login အချက်အလက်အသစ် သတ်မှတ်ပေးပါ\e[0m"
+read -r -p "Admin Username: " WEB_USER
+read -r -s -p "Admin Password: " WEB_PASS; echo
+read -r -p "Contact Link (ဥပမာ Telegram): " CONTACT_LINK
+
+ENVF="/etc/zivpn/web.env"
+echo "WEB_ADMIN_USER=${WEB_USER}" > "$ENVF"
+echo "WEB_ADMIN_PASSWORD=${WEB_PASS}" >> "$ENVF"
+echo "WEB_SECRET=$(openssl rand -hex 32)" >> "$ENVF"
+echo "WEB_CONTACT_LINK=${CONTACT_LINK}" >> "$ENVF"
+
+# 2. Python Web Script (Edit Button + Website Link Included)
 cat >/etc/zivpn/web.py <<'PY'
 import os, json, subprocess, socket
 from flask import Flask, render_template_string, request, redirect, url_for, session
 from datetime import datetime, timedelta, date
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("WEB_SECRET", "default_secret_key")
+app.secret_key = os.environ.get("WEB_SECRET")
 
 USERS_FILE = "/etc/zivpn/users.json"
 CONFIG_FILE = "/etc/zivpn/config.json"
@@ -44,13 +63,12 @@ STYLE = '''
     body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; text-align: center; }
     .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
     .logo-circle { background: white; width: 80px; height: 80px; border-radius: 50%; border: 4px solid #ff851b; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
-    .logo-circle span { color: #ff851b; font-size: 24px; font-weight: bold; border: 2px solid #ff851b; border-radius: 50%; padding: 8px; }
-    input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
-    .btn { background: #ff851b; color: white; border: none; padding: 12px; width: 95%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .logo-circle span { color: #ff851b; font-size: 24px; font-weight: bold; }
+    input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; }
+    .btn { background: #ff851b; color: white; border: none; padding: 12px; width: 95%; border-radius: 10px; font-weight: bold; cursor: pointer; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; text-align: left; }
     th, td { padding: 10px; border-bottom: 1px solid #eee; }
-    .ip-box { color: #ff851b; font-weight: bold; margin: 10px 0; font-size: 15px; }
-    .user-count { background: #fff2e6; padding: 10px; border-radius: 10px; font-weight: bold; margin-bottom: 15px; color: #ff851b; }
+    .ip-box { color: #ff851b; font-weight: bold; margin: 10px 0; }
 </style>
 '''
 
@@ -63,7 +81,7 @@ def login():
     return render_template_string(STYLE + '''
     <div class="card">
         <div class="logo-circle"><span>ZIV</span></div>
-        <h2 style="margin:5px;">ZIVPN Panel</h2>
+        <h2>ZIVPN Panel</h2>
         <div class="ip-box">Server IP: {{ip}}</div>
         <form method="post">
             <input name="u" placeholder="👤 Admin Username" required>
@@ -81,8 +99,6 @@ def dashboard():
     return render_template_string(STYLE + '''
     <div class="card">
         <h3 style="margin:0;">User Dashboard</h3>
-        <div class="ip-box">Server IP: {{ip}}</div>
-        <div class="user-count">👥 စုစုပေါင်း Member: {{ users|length }} ယောက်</div>
         <form action="/add" method="post">
             <input name="u" placeholder="👤 Username" required>
             <input name="p" placeholder="🔑 Password" required>
@@ -104,7 +120,7 @@ def dashboard():
             </tr>
             {% endfor %}
         </table>
-        <br><a href="/logout" style="color:gray; font-size:12px; text-decoration:none;">Logout</a>
+        <br><a href="/logout" style="color:gray; font-size:12px;">Logout</a>
     </div>
     ''', users=users, ip=get_ip())
 
@@ -125,10 +141,10 @@ def edit_user(username):
         <h3>📝 ပြင်ဆင်ရန်: {username}</h3>
         <form method="post">
             <input name="p" value="{user['password']}" placeholder="Password" required>
-            <input name="e" value="{user['expires']}" placeholder="Days" required>
+            <input name="e" value="{user['expires']}" placeholder="Days or YYYY-MM-DD" required>
             <button class="btn" type="submit">Update Account</button>
         </form>
-        <br><a href="/dashboard" style="color:gray; text-decoration:none;">Back to Dashboard</a>
+        <br><a href="/dashboard" style="color:gray;">Back to Dashboard</a>
     </div>
     ''')
 
@@ -157,5 +173,23 @@ def logout():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 PY
-systemctl restart zivpn-web
-echo "Panel updated successfully."
+
+# 3. Restart Service & Show Link
+systemctl daemon-reload
+systemctl stop zivpn-web || true
+cat <<EOF >/etc/systemd/system/zivpn-web.service
+[Unit]
+Description=ZIVPN Web Service
+After=network.target
+[Service]
+EnvironmentFile=$ENVF
+ExecStart=/usr/bin/python3 /etc/zivpn/web.py
+Restart=always
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable --now zivpn-web
+
+IP_ADDR=$(get_ip || hostname -I | awk '{print $1}')
+echo -e "\n\e[1;32m✅ အားလုံး အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ Bro!\e[0m"
+echo -e "\e[1;36m🌐 ဝှက်ဆိုက်ဝင်ရန်လင့်:\e[0m \e[1;33mhttp://${IP_ADDR}:8080\e[0m\n"
