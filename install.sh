@@ -1,19 +1,19 @@
 #!/bin/bash
-# ZIVPN Original Orange UI + Full Edit Feature
+# ZIVPN Original UI Fix (Fixed 404 & 500 Error)
 set -euo pipefail
 
-# အရင် folder အဟောင်းတွေကို ရှင်းထုတ်ပြီး အသစ်ပြန်ဆောက်မယ်
+# 1. Folder structure ပြန်ရှင်းပြီး အသစ်ဆောက်မယ်
 rm -rf /etc/zivpn/templates
 mkdir -p /etc/zivpn/templates
 
-# Admin Login သတ်မှတ်ချက်
+# 2. Login အချက်အလက် (Username: zaw151 လို့ ထည့်ပေးထားပါတယ်)
 ENVF="/etc/zivpn/web.env"
-echo "WEB_ADMIN_USER=admin" > "$ENVF"
-echo "WEB_ADMIN_PASSWORD=admin" >> "$ENVF"
+echo "WEB_ADMIN_USER=zaw151" > "$ENVF"
+echo "WEB_ADMIN_PASSWORD=admin123" >> "$ENVF"
 echo "WEB_SECRET=$(openssl rand -hex 32)" >> "$ENVF"
 echo "WEB_CONTACT_LINK=https://t.me/yourid" >> "$ENVF"
 
-# --- Python Web Script (Bro ရဲ့ မူရင်း UI design ကို အခြေခံထားသည်) ---
+# 3. Python Web Script (Bro ရဲ့ မူရင်း UI design အတိုင်း)
 cat >/etc/zivpn/web.py <<'PY'
 import os, json, subprocess
 from flask import Flask, render_template_string, request, redirect, url_for, session
@@ -24,8 +24,8 @@ app.secret_key = os.environ.get("WEB_SECRET")
 
 USERS_FILE = "/etc/zivpn/users.json"
 CONFIG_FILE = "/etc/zivpn/config.json"
-ADMIN_USER = os.environ.get("WEB_ADMIN_USER", "admin")
-ADMIN_PASS = os.environ.get("WEB_ADMIN_PASSWORD", "admin")
+ADMIN_USER = os.environ.get("WEB_ADMIN_USER", "zaw151")
+ADMIN_PASS = os.environ.get("WEB_ADMIN_PASSWORD", "admin123")
 
 def load_users():
     try:
@@ -46,13 +46,13 @@ def save_and_sync(users):
 # မူရင်း Orange Design Style
 STYLE = '''
 <style>
-    body { font-family: sans-serif; background: #f0f2f5; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
-    .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-    .logo-circle { background: #ff851b; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 4px solid #ff851b; outline: 2px solid white; }
-    .logo-circle span { color: white; font-size: 24px; font-weight: bold; }
-    input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-    .btn { background: #ff851b; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 10px; }
-    .contact { display: block; margin-top: 15px; color: #ff851b; text-decoration: none; font-size: 14px; }
+    body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; text-align: center; }
+    .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+    .logo-circle { background: white; width: 100px; height: 100px; border-radius: 50%; border: 5px solid #ff851b; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; }
+    .logo-circle span { color: #ff851b; font-size: 28px; font-weight: bold; border: 3px solid #ff851b; border-radius: 50%; padding: 10px; }
+    input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; background: #fff; }
+    .btn { background: #ff851b; color: white; border: none; padding: 12px; width: 95%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .contact { display: block; margin-top: 15px; color: #ff851b; text-decoration: none; font-size: 16px; }
 </style>
 '''
 
@@ -65,11 +65,12 @@ def login():
     return render_template_string(STYLE + '''
     <div class="card">
         <div class="logo-circle"><span>ZIV</span></div>
-        <h2 style="color:#333;">ZIVPN Panel</h2>
+        <h2 style="margin:0;">ZIVPN Panel</h2>
         <p style="color:#ff851b; font-weight:bold;">Server IP: {{ip}}</p>
+        <p style="color:#666;">Login to Admin Dashboard</p>
         <form method="post">
-            <input name="u" placeholder="Username" required>
-            <input name="p" type="password" placeholder="Password" required>
+            <input name="u" placeholder="🔑 Username" required>
+            <input name="p" type="password" placeholder="🔒 Password" required>
             <button class="btn" type="submit">Login</button>
         </form>
         <a href="#" class="contact">💬 Admin ကို ဆက်သွယ်ပါ</a>
@@ -81,21 +82,23 @@ def dashboard():
     if not session.get("auth"): return redirect(url_for("login"))
     users = load_users()
     return render_template_string(STYLE + '''
-    <div class="card" style="width: 450px;">
-        <h3>Member User စုစုပေါင်း: {{ count }} ယောက်</h3>
+    <div class="card" style="max-width: 450px;">
+        <div style="background:#fff2e6; padding:15px; border-radius:10px; margin-bottom:15px;">
+            💡 လက်ရှိ Member User စုစုပေါင်း: {{ count }} ယောက်
+        </div>
+        <h3 style="text-align:left;">➕ Add new user</h3>
         <form action="/add" method="post">
-            <input name="u" placeholder="Username" required>
-            <input name="p" placeholder="Password" required>
-            <input name="e" placeholder="ရက်ပေါင်း (ဥပမာ: 30)" required>
+            <input name="u" placeholder="👤 Username" required>
+            <input name="p" placeholder="🔑 Password" required>
+            <input name="e" placeholder="📅 Example : 2025-12-31 or 30" required>
             <button class="btn" type="submit">Create Account</button>
         </form>
-        <hr>
-        <table style="width:100%; margin-top:15px; font-size:14px;">
-            <tr><th>User</th><th>Pass</th><th>Exp</th><th>Action</th></tr>
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        <table style="width:100%; font-size:14px; text-align:left;">
+            <tr><th>User</th><th>Exp</th><th>Action</th></tr>
             {% for u in users %}
             <tr>
                 <td>{{ u.user }}</td>
-                <td>{{ u.password }}</td>
                 <td>{{ u.expires }}</td>
                 <td><a href="/edit/{{ u.user }}" style="color:#ff851b;">[ပြင်ရန်]</a></td>
             </tr>
@@ -120,7 +123,7 @@ def edit_user(username):
         return redirect(url_for("dashboard"))
     return render_template_string(STYLE + f'''
     <div class="card">
-        <h3>ပြင်ဆင်ရန်: {username}</h3>
+        <h3>📝 ပြင်ဆင်ရန်: {username}</h3>
         <form method="post">
             <input name="p" value="{user['password']}" placeholder="Password">
             <input name="e" value="{user['expires']}" placeholder="ရက်ပေါင်း (သို့) 2025-12-31">
@@ -146,17 +149,24 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
 PY
 
-# Service restart လုပ်မယ်
-systemctl stop zivpn-web || true
+# 4. Service ကို အသစ်ပြန်သတ်မှတ်ပြီး Restart လုပ်မယ်
 cat <<EOF >/etc/systemd/system/zivpn-web.service
 [Unit]
 Description=ZIVPN Web Service
+After=network.target
+
 [Service]
 EnvironmentFile=$ENVF
 ExecStart=/usr/bin/python3 /etc/zivpn/web.py
 Restart=always
+
 [Install]
 WantedBy=multi-user.target
 EOF
+
 systemctl daemon-reload
+systemctl stop zivpn-web || true
 systemctl enable --now zivpn-web
+
+echo "✅ Web UI ပြန်ကောင်းသွားပါပြီ။"
+echo "Link: http://$(hostname -I | awk '{print $1}'):8080"
