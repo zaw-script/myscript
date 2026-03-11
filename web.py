@@ -3,11 +3,9 @@ from flask import Flask, render_template_string, request, redirect, url_for, ses
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-
 USERS_FILE = "/etc/zivpn/users.json"
 ADMIN_USER = "admin"
 ADMIN_PASS = "admin123"
-
 def load_users():
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, "r") as f: return json.load(f)
