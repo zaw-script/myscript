@@ -1,11 +1,16 @@
 import os, json, datetime
 from flask import Flask, render_template_string, request, redirect, url_for, session
 
-app = Flask(__name__)
-app.secret_key = os.urandom(24)
-USERS_FILE = "/etc/zivpn/users.json"
+# လိုအပ်တဲ့ Variables များ
 ADMIN_USER = "admin"
 ADMIN_PASS = "admin123"
+ADMIN_CONTACT = "https://t.me/your_username"
+
+app = Flask(__name__)
+app.secret_key = os.urandom(24)
+
+USERS_FILE = "/etc/zivpn/users.json"
+
 def load_users():
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, "r") as f: return json.load(f)
@@ -48,7 +53,9 @@ def login():
             <input name="p" type="password" placeholder="🔒 Password" required>
             <button class="btn" type="submit">Login</button>
         </form>
-        <p style="font-size: 12px; color: #666; margin-top: 15px;">💬 Admin ကို ဆက်သွယ်ပါ</p>
+        <p style="font-size: 13px; margin-top: 20px;">
+            💬 Admin ကို ဆက်သွယ်ရန်: <a href="''' + ADMIN_CONTACT + '''" style="color: #ff851b;">Click Here</a>
+        </p>
     </div>''')
 
 @app.route("/dashboard")
@@ -58,7 +65,6 @@ def dashboard():
     return render_template_string(STYLE + '''
     <div class="card" style="max-width: 500px;">
         <h2>User Dashboard</h2>
-        <div class="server-ip">Server IP: 43.229.132.141</div>
         <div class="member-box">👥 စုစုပေါင်း Member: {{ users|length }} ယောက်</div>
         <form action="/add" method="post">
             <input name="u" placeholder="👤 Username" required>
@@ -73,7 +79,7 @@ def dashboard():
                 <td>{{ u.user }}</td>
                 <td>{{ u.password }}</td>
                 <td>{{ u.exp }}</td>
-                <td><a href="#" class="action-links">ပြင်ရန်</a> | <a href="/del/{{ u.user }}" class="action-links">🗑️</a></td>
+                <td><a href="/del/{{ u.user }}" class="action-links">🗑️</a></td>
             </tr>
             {% endfor %}
         </table>
